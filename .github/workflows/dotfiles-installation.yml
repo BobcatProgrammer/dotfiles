@@ -14,6 +14,7 @@ jobs:
         os: [macos-latest, macos-13, macos-12, debian-latest, ubuntu-latest]
     steps:
       - name: Clean up installed software
+        if: startsWith(matrix.os, "macos-")
         run: |
           brew uninstall --force --ignore-dependencies $(brew list)
           brew uninstall --cask --force --ignore-dependencies $(brew list --cask)
