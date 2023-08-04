@@ -17,7 +17,7 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: |
           brew uninstall --force --ignore-dependencies $(brew list)
-          brew uninstall --cask --force --ignore-dependencies $(brew list --cask)
+          # brew uninstall --cask --force --ignore-dependencies $(brew list --cask)
           brew cleanup --prune-prefix
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
       - name: Clone this repo
