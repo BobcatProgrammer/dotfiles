@@ -24,13 +24,18 @@ if ! command -v brew &> /dev/null
 then
     echo "Homebrew could not be found, installing Homebrew"
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # On linux we need extra steps
+    BREW_PREFIX=$(brew --prefix)
+    if [ "$system_type" = "Linux" ]; then
+        eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+    fi
 else
     echo "Homebrew is installed, updating Homebrew"
     brew update
 fi
 
 # Clone dotfiles repo
-git clone https://github.com/Bobcatprogrammer/dotfiles.git ~/.dotfiles
+git clone https://github.com/BobcatProgrammer/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles || exit
 
 # Symlink .config to ~/.config
