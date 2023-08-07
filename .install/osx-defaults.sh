@@ -2,6 +2,16 @@
 
 # ~/.macos — https://mths.be/macos
 
+
+# Create cronjob
+if [ "$(crontab -l | grep -c brew)" -eq 0 ]; then
+  (
+    crontab -l
+    echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    echo "0 */3 * * * brew bundle dump --force --file ~/.Brewfile"
+  ) | crontab -
+fi
+
 # Close any open System Preferences panes, to prevent them from overriding
 # settings we’re about to change
 osascript -e 'tell application "System Preferences" to quit'
@@ -21,6 +31,9 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 #sudo scutil --set HostName "0x6D746873"
 #sudo scutil --set LocalHostName "0x6D746873"
 #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "0x6D746873"
+
+# Show battery as percentage
+defaults write com.apple.menuextra.battery ShowPercent -string "YES"
 
 # Disable the sound effects on boot
 sudo nvram SystemAudioVolume=" "
