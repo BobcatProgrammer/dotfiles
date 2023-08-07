@@ -27,7 +27,7 @@ brew "yq"                 # A lightweight and portable command-line YAML process
 brew "flux"               # The Kubernetes GitOps operator.
 brew "k9s"                # A terminal-based UI to interact with your Kubernetes clusters.
 brew "kubectx"            # A utility to switch between kubectl contexts.
-brew "podman-desktop"     # A native macOS desktop application for Podman containers.
+brew "podman-compose"     # A script to run docker-compose.yml using Podman.
 brew "podman"             # A daemonless container engine for developing, managing, and running OCI Containers.
 
 # Development tools
