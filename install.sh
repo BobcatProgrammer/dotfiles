@@ -42,4 +42,4 @@ fi
 # Clone the dotfiles repo
 cd "$HOME" || exit
 
-yadm clone https://github.com/BobcatProgrammer/dotfiles.git
+yadm clone https://github.com/BobcatProgrammer/dotfiles.git --no-bootstrap

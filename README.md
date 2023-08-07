@@ -6,24 +6,16 @@ My dotfiles for MacOS &amp; Debian
 
 The dotfiles are managed using yadm. To use them you first need to install it via the package manager (Homebrew or apt).
 
-## Mac OS
+## Install
 
-### Install Homebrew
+To install yadm and clone dotfiles you just need to run the install script. Works for MacOS or Debian
 
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
+```sh
+curl -fsSL https://raw.githubusercontent.com/BobcatProgrammer/dotfiles/master/install.sh | bash
+```
 
-### Install yadm (Mac OS)
+## Bootstrap
 
-`brew install yadm`
-
-## Debian
-
-### Install yadm (Debian)
-
-`sudo apt yadm`
-
-## Clone dotfiles
-
-'''sh
-yadm clone https://github.com/BobcatProgrammer/dotfiles
-'''
+```sh
+yadm bootstrap
+```
