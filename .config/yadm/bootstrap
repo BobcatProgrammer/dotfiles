@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Check what system we are on
+system_type=$(uname -s)
+
