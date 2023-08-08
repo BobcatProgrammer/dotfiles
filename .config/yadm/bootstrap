@@ -3,3 +3,37 @@
 # Check what system we are on
 system_type=$(uname -s)
 
+# Check if we are root
+sudo -v
+
+# install nerdfonts
+if [ "$system_type" = "Darwin" ]; then
+    brew tap homebrew/cask-fonts
+    brew install --cask font-hack-nerd-font
+elif [ "$system_type" = "Linux" ]; then
+    mkdir -p ~/.local/share/fonts
+    # Download nerd fonts and save in ~/.local/share/fonts
+    curl -fLO https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Hack/Regular/HackNerdFontMono-Regular.ttf -o ~/.local/share/fonts/
+    c
+fi
+    
+
+# Install fish shell
+if [ "$system_type" = "Darwin" ]; then
+    brew install fish
+elif [ "$system_type" = "Linux" ]; then
+    sudo -v
+    sudo apt-add-repository ppa:fish-shell/release-3
+    sudo apt-get update
+    sudo apt-get install fish
+fi
+
+fish -c "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher && fisher install"
+
+# change default console to fish
+if [ "$system_type" = "Darwin" ]; then
+    sudo sh -c "echo $(which fish) >> /etc/shells"
+    chsh -s $(which fish)
+elif [ "$system_type" = "Linux" ]; then
+    sudo chsh -s $(which fish) $(whoami)
+fi
