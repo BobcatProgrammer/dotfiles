@@ -40,3 +40,5 @@ export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 # Set k9s dir to XDG_CONFIG_HOME
 export K9S_CONFIG_DIR=$HOME/.config/k9s
 
+#Set bat theme to catppuccin
+set -Ux BAT_THEME "Catppuccin-mocha"
