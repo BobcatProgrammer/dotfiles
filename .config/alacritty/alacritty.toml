@@ -1,4 +1,4 @@
-import = ["/Users/trockels/.config/alacritty/nord.toml"]
+import = ["/Users/trockels/.config/alacritty/catppuccin-mocha.toml"]
 live_config_reload = true
 
 [cursor.style]

@@ -1,4 +1,5 @@
-ilancosman/tide@v5
 jorgebucaran/fisher
-oh-my-fish/plugin-wifi-password
-patrickf1/fzf.fish
+ilancosman/tide@v6
+catppuccin/fish
+budimanjojo/tmux.fish
+gazorby/fish-exa
