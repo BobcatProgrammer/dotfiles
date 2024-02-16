@@ -48,7 +48,7 @@ mods = "Control"
 
 [[keyboard.bindings]]
 action = "IncreaseFontSize"
-key = "Equals"
+key = "Plus"
 mods = "Control"
 
 [[keyboard.bindings]]
@@ -154,6 +154,10 @@ chars = "\u001BOF"
 key = "Right"
 mode = "AppCursor"
 mods = "Command"
+
+[[keyboard.bindings]]
+key = "NumpadEnter"
+chars = "\r"
 
 [mouse]
 hide_when_typing = true
