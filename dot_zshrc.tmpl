@@ -1,0 +1,41 @@
+
+# Add ~/.local/bin to PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+{{- if eq .chezmoi.os "darwin" }}
+# macOS-only settings — loaded only when chezmoi runs on macOS.
+# Add Homebrew to PATH if present (Apple Silicon: /opt/homebrew, Intel: /usr/local)
+if [ -d "/opt/homebrew/bin" ]; then
+	export PATH="/opt/homebrew/bin:$PATH"
+elif [ -d "/usr/local/bin" ]; then
+	export PATH="/usr/local/bin:$PATH"
+fi
+
+# If Homebrew is installed, load the recommended environment so `brew` and
+# packages are available in interactive shells. This is idempotent and safe to
+# run on each shell startup.
+if command -v brew >/dev/null 2>&1; then
+    eval "$(brew shellenv)"
+    export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
+
+fi
+
+# Add VS Code's CLI to PATH if it's installed but not already on PATH
+if ! command -v code >/dev/null 2>&1; then
+    for dir in \
+        "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" \
+        "/Applications/Visual Studio Code - Insiders.app/Contents/Resources/app/bin" \
+        "$HOME/.vscode/bin"; do
+        if [ -d "$dir" ]; then
+            export PATH="$dir:$PATH"
+            break
+        fi
+    done
+fi
+
+# macOS-specific aliases / settings
+alias ls='ls -G'
+
+{{- end }}
+
+

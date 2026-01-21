@@ -1,0 +1,21 @@
+[push]
+	default = current
+[fetch]
+	prune = true
+
+[user]
+	email = mail@simon-trockel.de
+	name = Simon Trockel
+
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+[alias]
+	plog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
+	yolo = !git add -A && git commit -m \"$(curl -fsSL http://whatthecommit.com/index.txt)\"
+[fetch "origin"]
+	prune = true
+[pull]
+	rebase = true
+
+[includeIf "gitdir:repos/MMS/"]
+  	path = .gitconfig-mms

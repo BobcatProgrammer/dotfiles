@@ -1,0 +1,22 @@
+
+{{ if eq .chezmoi.os "darwin" -}}
+IdentityAgent ~/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock
+{{ end -}}
+
+Host homeserver
+    HostName homeserver
+    User trockels
+
+Host proxmox01
+    HostName proxmox01
+    User root
+
+Host storage
+    HostName u413060.your-storagebox.de
+    User u413060
+    Port 23
+
+Host storage2
+    HostName u413060.your-storage.de
+    User u413060-sub01
+    Port 23

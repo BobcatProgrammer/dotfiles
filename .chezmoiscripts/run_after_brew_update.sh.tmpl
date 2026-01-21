@@ -1,0 +1,8 @@
+{{- if or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux") -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+brew update
+brew upgrade --cask --greedy
+
+{{- end -}}

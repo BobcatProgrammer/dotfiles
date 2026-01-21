@@ -1,0 +1,16 @@
+{{- if (eq .chezmoi.os "darwin") -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+install_xcode() {
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+        echo "This script only runs on macOS (Darwin)." >&2
+        exit 2
+    fi
+
+    xcode-select --install || true
+}
+
+install_xcode
+
+{{- end -}}

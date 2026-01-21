@@ -1,0 +1,59 @@
+{{- if or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux") -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# run_after script for chezmoi to install items from ~/.Brewfile
+# This script is idempotent and safe to run multiple times. It will:
+# - ensure a Brewfile exists at $HOME/.Brewfile (copying from the repo copy if present)
+# - ensure Homebrew is available in the environment (attempt common shellenv steps)
+# - run `brew bundle --file="$HOME/.Brewfile"` if brew is present
+
+# .Brewfile hash: {{ include "dot_Brewfile" | sha256sum }}
+
+log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
+
+if [[ "$(id -u)" -eq 0 ]]; then
+  log "Running as root; skipping Brewfile install (Homebrew should not be run as root)."
+  exit 0
+fi
+
+BREWFILE="$HOME/.Brewfile"
+if [[ ! -f "$BREWFILE" ]]; then
+  # Try to locate the repo copy next to the chezmoi scripts directory
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  candidate="${script_dir%/.chezmoiscripts}/dot_Brewfile"
+  if [[ -f "$candidate" ]]; then
+    log "Found repo Brewfile at $candidate; copying to $BREWFILE"
+    mkdir -p "$(dirname "$BREWFILE")"
+    cp -f "$candidate" "$BREWFILE"
+  else
+    log "No Brewfile found at $BREWFILE nor repo copy at $candidate; nothing to do"
+    exit 0
+  fi
+fi
+
+# Make sure brew is available in the current shell. The user's environment setup may
+# already add Homebrew to PATH; try common shellenv locations if brew not found.
+if ! command -v brew >/dev/null 2>&1; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    log "Sourcing Homebrew env from /opt/homebrew"
+    eval "$(/opt/homebrew/bin/brew shellenv)" || true
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    log "Sourcing Linuxbrew env from /home/linuxbrew/.linuxbrew"
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" || true
+  elif [[ -x /usr/local/bin/brew ]]; then
+    log "Sourcing Homebrew env from /usr/local"
+    eval "$(/usr/local/bin/brew shellenv)" || true
+  fi
+fi
+
+if ! command -v brew >/dev/null 2>&1; then
+  log "brew command not available; ensure Homebrew is installed before running this script."
+  exit 0
+fi
+
+log "Running: brew bundle --file='$BREWFILE'"
+brew bundle --file="$BREWFILE"
+log "Brewfile install complete."
+
+{{- end -}}

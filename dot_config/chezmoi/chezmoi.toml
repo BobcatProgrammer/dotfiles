@@ -1,0 +1,5 @@
+encryption = "age"
+
+[age]
+identity = "~/.config/chezmoi/age.key"
+recipient = "age1qj34rrwamuvqlyfaekueaz3rxcwk5pujfaun5ppsya5xzhhsny6qqpd9nt"           # Replace with your real public key

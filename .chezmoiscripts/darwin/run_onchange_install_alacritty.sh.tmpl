@@ -1,0 +1,131 @@
+
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# If Alacritty is currently running, request it to quit via AppleScript (osascript)
+# to allow a graceful shutdown. Wait up to $QUIT_TIMEOUT seconds for the
+# process to exit. If it remains running, abort with non-zero status so the
+# caller can retry after the user quits the app manually.
+if pgrep -x "Alacritty" >/dev/null 2>&1; then
+	QUIT_TIMEOUT=15
+	printf "%s\n" "[install-alacritty] INFO: Alacritty is currently running; requesting graceful quit..."
+	if command -v osascript >/dev/null 2>&1; then
+		# Ask the GUI app to quit; ignore osascript errors and proceed to wait.
+		osascript -e 'tell application "Alacritty" to quit' >/dev/null 2>&1 || true
+	else
+		printf "%s\n" "[install-alacritty] WARNING: 'osascript' not available; cannot request graceful quit" >&2
+	fi
+
+	# Wait for the process to exit, up to QUIT_TIMEOUT seconds.
+	elapsed=0
+	while pgrep -x "Alacritty" >/dev/null 2>&1 && [ "$elapsed" -lt "$QUIT_TIMEOUT" ]; do
+		sleep 1
+		elapsed=$((elapsed + 1))
+	done
+
+	if pgrep -x "Alacritty" >/dev/null 2>&1; then
+		printf "%s\n" "[install-alacritty] ERROR: Alacritty is still running after ${QUIT_TIMEOUT}s. Please quit Alacritty and re-run this installer." >&2
+		exit 4
+	fi
+	printf "%s\n" "[install-alacritty] Alacritty has exited; continuing installation."
+fi
+
+# Simplified, templated installer for Alacritty using chezmoi's GitHub helper.
+# The template resolves the correct asset URL at render time using gitHubLatestReleaseAssetURL
+
+# Repository
+REPO="alacritty/alacritty"
+
+# Resolved at template-render time by chezmoi
+ASSET_URL="{{- $repo := "alacritty/alacritty" -}}
+{{- $asset := "" -}}
+	{{- $asset = gitHubLatestReleaseAssetURL $repo "*.dmg" -}}
+{{- $asset -}}"
+
+if [ -z "${ASSET_URL}" ]; then
+	printf "[install-alacritty] ERROR: no release asset URL resolved by chezmoi\n" >&2
+	exit 1
+fi
+
+TMPDIR="$(mktemp -d)"
+cleanup() { rm -rf "$TMPDIR"; }
+trap cleanup EXIT
+
+log() { printf "%s\n" "[install-alacritty] $*"; }
+err() { printf "%s\n" "[install-alacritty] ERROR: $*" >&2; }
+
+ASSET_NAME="$(basename "$ASSET_URL")"
+OUTPATH="$TMPDIR/$ASSET_NAME"
+
+log "Downloading $ASSET_URL -> $OUTPATH"
+curl -L --fail -o "$OUTPATH" "$ASSET_URL"
+
+# Install to $HOME/Applications 
+APPDIR="$HOME/Applications"
+mkdir -p "$APPDIR"
+log "Mounting DMG $OUTPATH"
+MOUNTDIR="$(mktemp -d)"
+hdiutil attach "$OUTPATH" -mountpoint "$MOUNTDIR" 
+if [ ! -d "$MOUNTDIR" ]; then
+	err "Failed to mount DMG $OUTPATH"
+	exit 2
+fi	
+cleanup_mount() { 
+	log "Detaching DMG mount $MOUNTDIR"
+	hdiutil detach "$MOUNTDIR" -quiet || true
+	rm -rf "$MOUNTDIR"
+}
+trap cleanup_mount EXIT
+if [ ! -d "$MOUNTDIR/Alacritty.app" ]; then
+	err "Mounted DMG does not contain expected Alacritty.app at $MOUNTDIR/Alacritty.app"
+	exit 3
+fi
+log "Copying Alacritty.app to $APPDIR"
+# Use 'ditto' to preserve resource forks and extended attributes correctly
+if [ -d "$MOUNTDIR/Alacritty.app" ]; then
+	log "Copying Alacritty.app to $APPDIR using ditto"
+	if ditto "$MOUNTDIR/Alacritty.app" "$APPDIR/Alacritty.app"; then
+		log "Alacritty copied to $APPDIR/Alacritty.app"
+	else
+		err "Failed to copy Alacritty.app with ditto; falling back to cp -R"
+		cp -R "$MOUNTDIR/Alacritty.app" "$APPDIR/" || { err "Fallback copy failed"; exit 5; }
+	fi
+else
+	# Sometimes the .app is inside a subdirectory inside the DMG; try to find it
+	found_app_path="$(find "$MOUNTDIR" -maxdepth 2 -type d -name 'Alacritty.app' -print -quit || true)"
+	if [ -n "$found_app_path" ]; then
+		log "Found Alacritty.app at $found_app_path; copying with ditto"
+		if ditto "$found_app_path" "$APPDIR/Alacritty.app"; then
+			log "Alacritty copied to $APPDIR/Alacritty.app"
+		else
+			err "Failed to copy Alacritty.app from $found_app_path"
+			exit 6
+		fi
+	else
+		err "Mounted DMG does not contain Alacritty.app (searched $MOUNTDIR)"
+		exit 3
+	fi
+fi
+
+# Remove the com.apple.quarantine attribute so Gatekeeper doesn't block the app
+if command -v xattr >/dev/null 2>&1; then
+	if xattr -p com.apple.quarantine "$APPDIR/Alacritty.app" >/dev/null 2>&1; then
+		log "Removing com.apple.quarantine xattr from $APPDIR/Alacritty.app"
+		xattr -dr com.apple.quarantine "$APPDIR/Alacritty.app" || log "Warning: failed to remove quarantine xattr"
+	else
+		log "No quarantine xattr present on $APPDIR/Alacritty.app"
+	fi
+else
+	log "xattr not available; cannot clear quarantine attribute"
+fi
+
+# Ensure executables inside the .app are executable
+log "Setting executable permissions under $APPDIR/Alacritty.app"
+chmod -R a+rX "$APPDIR/Alacritty.app" || log "Warning: chmod failed; you may need to set permissions manually"
+
+log "Alacritty installed to $APPDIR/Alacritty.app"
+
+
+{{- end -}}
+

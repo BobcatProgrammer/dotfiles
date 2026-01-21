@@ -1,0 +1,74 @@
+{{- if (eq .chezmoi.os "darwin") -}}
+#!/usr/bin/env bash
+
+install_homebrew() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "This script only runs on macOS (Darwin)." >&2
+    exit 2
+  fi
+
+  if command -v brew >/dev/null 2>&1; then
+    echo "Homebrew already installed at: $(command -v brew)"
+    brew --version || true
+    exit 0
+  fi
+
+
+  # Ensure we have sudo available and warm the credentials cache.
+  if [[ "$(id -u)" -eq 0 ]]; then
+    echo "Running as root; Homebrew should not be installed as root." >&2
+    echo "Please run this script as a normal user." >&2 
+    exit 4
+  else
+    if ! command -v sudo >/dev/null 2>&1; then
+      echo "sudo not found. Please install sudo or run this script as root." >&2
+      exit 4
+    fi
+
+    # Prompt for sudo password and cache credentials. This is idempotent.
+    echo "Requesting sudo credentials to allow installation..."
+    if sudo -v; then
+      # Keep-alive: refresh sudo timestamp until the script exits.
+      (
+        # background loop should die when parent dies
+        while true; do
+          sleep 60
+          sudo -n true >/dev/null 2>&1 || true
+          # if parent PID gone, exit
+          kill -0 "$$" >/dev/null 2>&1 || exit 0
+        done
+      ) &
+      SUDO_REFRESH_PID=$!
+      # Ensure background refresher is killed on exit
+      trap 'kill "$SUDO_REFRESH_PID" >/dev/null 2>&1 || true' EXIT
+    else
+      if [[ -t 0 ]]; then
+        echo "Unable to obtain sudo credentials. Aborting." >&2
+        exit 5
+      else
+        echo "No interactive terminal to request sudo password; cannot continue." >&2
+        exit 6
+      fi
+    fi
+  fi
+
+  echo "Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  # After install, try to make `brew` available in the current shell.
+  if command -v brew >/dev/null 2>&1; then
+    echo "Homebrew installed successfully: $(brew --version)"
+    echo "Note: this repository manages zsh startup. Make sure your zshrc loads"
+    echo "the Homebrew environment (the repo's dot_zshrc.tmpl includes an eval)."
+    exit 0
+  else
+    echo "Homebrew installation finished but 'brew' not found in PATH." >&2
+    echo "You may need to add Homebrew to your PATH manually. Common locations:" >&2
+    echo "  /opt/homebrew/bin (Apple Silicon)" >&2
+    echo "  /usr/local/bin (Intel)" >&2
+    exit 3
+  fi
+}
+
+install_homebrew
+{{- end -}}
