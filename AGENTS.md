@@ -64,6 +64,27 @@ encrypted state stay in **chezmoi**. Homebrew is a small macOS-only residual.
 - Scripts SHOULD NOT assume they are run from any particular directory.
 - Scripts MUST be safe to run on any OS, even if they do nothing on some OSes.
 
+## Bootstrap and verification
+
+- `scripts/install.sh` is the one-liner bootstrap (curl | sh): distro prereqs →
+  Determinate Nix (`linux --init none` when no systemd) → home-manager CLI
+  profile install (then removed; the switch owns the profile entry) → chezmoi →
+  config apply (no scripts/encrypted) → `home-manager switch` → second apply so
+  scripts run. `DOTFILES_REPO` overrides the clone source (CI and pre-push
+  tests mount this repo and set it to the local path). Changing the bootstrap
+  requires a fresh-container run to prove it.
+- `scripts/verify.sh` asserts the fresh-install contract: omp/nvim/lazygit/
+  zellij/tmux/fish resolve and print versions, repo configs land in ~/.config,
+  tmux/zellij launch on a PTY, and `fc-list` shows the Hack Nerd Font.
+- Verification loop (no push needed): commit → run
+  `podman run --rm -v "$PWD:/mnt/dotfiles:ro" -e DOTFILES_REPO=/mnt/dotfiles
+  fedora:latest|debian:latest bash -c "bash /mnt/dotfiles/scripts/install.sh &&
+  bash /mnt/dotfiles/scripts/verify.sh"`. GitHub Actions mirrors this in
+  `.github/workflows/verify.yml`. Note: SELinux-enforcing hosts need
+  `--security-opt label=disable` on the mount.
+- `git clone` from a local path copies committed HEAD only — commit fixes
+  before re-running container checks, or the containers test stale code.
+
 ## Known edges (do not "fix" by accident)
 
 - `run_onchange_before_decrypt-private-key.sh` exits 1 when `bw`/`BW_SESSION`
