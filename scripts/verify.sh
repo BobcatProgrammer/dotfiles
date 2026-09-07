@@ -52,7 +52,7 @@ check "home-manager targets linux" grep -q 'x86_64-linux\|aarch64-linux' "$HOME/
 
 # --- 3. PTY launches -----------------------------------------------------------
 if command -v script >/dev/null 2>&1; then
-    check "tmux starts a session" bash -c 'tmux -L smoke new-session -d -s s && tmux -L smoke kill-session -t s && tmux -L smoke kill-server'
+    check "tmux starts a session" bash -c 'tmux -L smoke new-session -d -s s && tmux -L smoke kill-session -t s'
     # zellij: start on a PTY, let it run 5s (timeout 124 = stayed up)
     check "zellij runs on a PTY" bash -c 'timeout 5 script -qec "zellij -s smoke" /dev/null >/dev/null 2>&1; test $? -eq 124'
     # omp: rendering the prompt for fish requires a PTY; 124 = stayed up
