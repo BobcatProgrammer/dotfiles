@@ -91,6 +91,7 @@ let
   linux = with pkgs; [
     fontconfig # provides fc-list/fc-cache
     hackFont
+    util-linux # provides script(1) (PTY smoke tests, etc.)
   ];
 in
 {

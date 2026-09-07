@@ -50,12 +50,12 @@ if need_prereqs; then
     case "$os_id" in
         fedora|rhel|centos)
             log "installing prereqs via dnf"
-            dnf -y install curl git >/dev/null 2>&1 || die "dnf install failed"
+            dnf -y install curl git util-linux >/dev/null 2>&1 || die "dnf install failed"
             ;;
         debian|ubuntu)
             log "installing prereqs via apt-get"
             apt-get update -qq >/dev/null 2>&1 || die "apt-get update failed"
-            apt-get install -y -qq curl git >/dev/null 2>&1 || die "apt-get install failed"
+            apt-get install -y -qq curl git util-linux procps >/dev/null 2>&1 || die "apt-get install failed"
             ;;
         *)
             die "unsupported distro: $os_id — install curl and git, then re-run"
