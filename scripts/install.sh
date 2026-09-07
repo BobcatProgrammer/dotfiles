@@ -90,8 +90,19 @@ export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
 
 # --- 3. home-manager ----------------------------------------------------------
 if ! command -v home-manager >/dev/null 2>&1; then
-    log "installing home-manager into the nix profile"
+    log "installing home-manager CLI into the nix profile"
     nix profile install github:nix-community/home-manager || die "home-manager install failed"
+fi
+
+# `home-manager switch` activation installs its own home-manager-path env into
+# the same profile; keeping the standalone CLI package there too conflicts
+# (both provide bin/home-manager). Remember the CLI store path, drop the
+# profile entry, and run the remembered binary — later switches use the env's
+# home-manager from ~/.nix-profile.
+HM_BIN="$(readlink -f "$(command -v home-manager)")"
+if nix profile list 2>/dev/null | grep -q 'home-manager$'; then
+    log "removing standalone home-manager CLI from profile (switch manages its own)"
+    nix profile remove home-manager || true
 fi
 
 # --- 4. chezmoi + repo configs -------------------------------------------------
@@ -116,7 +127,7 @@ chezmoi apply --exclude=scripts,encrypted || die "chezmoi apply failed"
 
 # --- 5. home-manager switch -----------------------------------------------------
 log "building and switching home-manager generation (this takes a while)"
-home-manager switch || die "home-manager switch failed"
+"$HM_BIN" switch || die "home-manager switch failed"
 
 # --- 6. apply again so scripts run now that tools exist --------------------------
 log "applying again with scripts enabled"
