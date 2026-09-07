@@ -40,7 +40,6 @@ done
 for cfg in \
     .config/fish/config.fish \
     .config/zellij/config.kdl \
-    .config/zellij/themes/catppuccin-mocha.kdl \
     .config/tmux/tmux.conf \
     .config/lazygit/config.yml \
     .config/nvim/init.lua \

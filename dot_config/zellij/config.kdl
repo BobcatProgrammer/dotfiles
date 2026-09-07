@@ -1,6 +1,6 @@
 // zellij configuration — ~/.config/zellij/config.kdl
 // Managed by chezmoi (dot_config/zellij/config.kdl).
-// Custom theme: ~/.config/zellij/themes/catppuccin-mocha.kdl (same repo).
+// Theme is one of zellij's builtins (ships with the package).
 
 theme "catppuccin-mocha"
 
