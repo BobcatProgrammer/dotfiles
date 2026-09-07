@@ -4,17 +4,20 @@ set -euo pipefail
 # ensure bw is installed
 if ! command -v bw >/dev/null 2>&1; then
     echo "bitwarden-cli (bw) not found in PATH; cannot retrieve chezmoi age.key"
-    exit 1
+    echo "skipping (age.key stays absent; encrypted files require a full apply after bw setup)"
+    exit 0
 fi
 # ensure bw is logged in
 if ! bw sync >/dev/null 2>&1; then
     echo "bitwarden-cli (bw) cannot sync; are you logged in?"
-    exit 1
+    echo "skipping (age.key stays absent; encrypted files require a full apply after bw setup)"
+    exit 0
 fi
 # ensure bw session is available
 if [ -z "${BW_SESSION:-}" ]; then
     echo "bitwarden-cli (bw) session not found; please log in and export BW_SESSION"
-    exit 1
+    echo "skipping (age.key stays absent; encrypted files require a full apply after bw setup)"
+    exit 0
 fi
 
 if [ ! -f "${HOME}/.config/chezmoi/age.key" ]; then

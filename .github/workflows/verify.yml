@@ -1,0 +1,24 @@
+name: verify-fresh-install
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  verify:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [fedora:latest, debian:latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run bootstrap in fresh ${{ matrix.distro }} container
+        run: |
+          docker run --rm \
+            -v "$PWD:/mnt/dotfiles:ro" \
+            -e DOTFILES_REPO=/mnt/dotfiles \
+            "${{ matrix.distro }}" \
+            bash -c "bash /mnt/dotfiles/scripts/install.sh && bash /mnt/dotfiles/scripts/verify.sh"

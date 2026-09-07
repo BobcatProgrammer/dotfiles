@@ -2,6 +2,11 @@
 
 let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
+
+  # Nerd Font used by alacritty/tmux/zellij configs. macOS keeps the brew
+  # casks (font dirs there are handled by the OS); Linux installs via nix.
+  hackFont = pkgs.nerd-fonts.hack;
 
   # CLI tools: identical on macOS and Linux.
   # Everything here was formerly installed via Homebrew / asdf.
@@ -26,6 +31,7 @@ let
     kubectl
     kubectx
     kustomize
+    lazygit
     neovim
     nmap
     nodejs
@@ -48,6 +54,7 @@ let
     uv
     wget
     yq
+    zellij
     zoxide
   ];
 
@@ -79,6 +86,12 @@ let
       ];
     }
   ];
+
+  # Linux-only packages.
+  linux = with pkgs; [
+    fontconfig # provides fc-list/fc-cache
+    hackFont
+  ];
 in
 {
   home.username = "{{ .chezmoi.username }}";
@@ -86,7 +99,16 @@ in
 
   home.stateVersion = "26.05";
 
-  home.packages = cli ++ lib.optionals isDarwin darwin;
+  home.packages = cli ++ lib.optionals isDarwin darwin ++ lib.optionals isLinux linux;
+
+  # Expose the nix-installed Nerd Font to fontconfig on Linux.
+  home.file = lib.mkIf isLinux {
+    ".local/share/fonts/NerdFonts".source = "${hackFont}/share/fonts/truetype/NerdFonts";
+  };
+
+  fonts.fontconfig = lib.mkIf isLinux {
+    enable = true;
+  };
 
   home.sessionVariables = {
     EDITOR = "vim";

@@ -25,6 +25,14 @@ MARKER="$HOME/.cache/chezmoi/gke-auth-plugin-source"
 MANIFEST_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/components-2.json"
 BASE_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/"
 
+# jq/curl arrive with home-manager; until then this cannot run (do not fail applies)
+for dep in curl jq; do
+    if ! command -v "$dep" >/dev/null 2>&1; then
+        log "$dep not available yet (pre-home-manager?); skipping"
+        exit 0
+    fi
+done
+
 os=$(uname -s)
 arch=$(uname -m)
 case "$os-$arch" in

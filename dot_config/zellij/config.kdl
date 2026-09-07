@@ -1,0 +1,14 @@
+// zellij configuration — ~/.config/zellij/config.kdl
+// Managed by chezmoi (dot_config/zellij/config.kdl).
+// Custom theme: ~/.config/zellij/themes/catppuccin-mocha.kdl (same repo).
+
+theme "catppuccin-mocha"
+
+mouse_mode true
+copy_on_select true
+scrollback_lines_to_search 10000
+
+// fish is the default shell everywhere in this setup
+default_shell "fish"
+
+status_bar_position "bottom"

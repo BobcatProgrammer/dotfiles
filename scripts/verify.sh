@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Verify a fresh install (used by CI containers and after scripts/install.sh).
+# Exits non-zero on the first failed check.
+#
+# Checks:
+#   1. omp, neovim, lazygit, zellij, tmux, fish resolve on PATH, version/help exits 0
+#   2. configs from the repo landed at ~/.config (chezmoi applied)
+#   3. tmux and zellij start on a PTY; omp binary runs
+#   4. a Nerd Font is registered with fontconfig
+
+set -uo pipefail
+
+fails=0
+check() { # name, condition...
+    local name="$1"
+    shift
+    if "$@" >/dev/null 2>&1; then
+        printf 'ok   %s\n' "$name"
+    else
+        printf 'FAIL %s\n' "$name"
+        fails=$((fails + 1))
+    fi
+}
+
+# Tools must be on PATH regardless of shell init
+export PATH="$HOME/.nix-profile/bin:$HOME/.local/bin:/nix/var/nix/profiles/default/bin:$PATH"
+
+# --- 1. tools ---------------------------------------------------------------
+declare -A vflag=([tmux]="-V")
+for tool in omp nvim lazygit zellij tmux fish; do
+    if command -v "$tool" >/dev/null 2>&1; then
+        check "$tool version exits 0" "$tool" "${vflag[$tool]:---version}"
+    else
+        printf 'FAIL %s on PATH\n' "$tool"
+        fails=$((fails + 1))
+    fi
+done
+
+# --- 2. configs ---------------------------------------------------------------
+for cfg in \
+    .config/fish/config.fish \
+    .config/zellij/config.kdl \
+    .config/zellij/themes/catppuccin-mocha.kdl \
+    .config/tmux/tmux.conf \
+    .config/lazygit/config.yml \
+    .config/nvim/init.lua \
+    .config/home-manager/flake.nix; do
+    check "config present: $cfg" test -f "$HOME/$cfg"
+done
+
+# rendered home-manager config must target linux
+check "home-manager targets linux" grep -q 'x86_64-linux\|aarch64-linux' "$HOME/.config/home-manager/flake.nix"
+
+# --- 3. PTY launches -----------------------------------------------------------
+if command -v script >/dev/null 2>&1; then
+    check "tmux starts a session" bash -c 'tmux -L smoke new-session -d -s s && tmux -L smoke kill-session -t s && tmux -L smoke kill-server'
+    # zellij: start on a PTY, let it run 5s (timeout 124 = stayed up)
+    check "zellij runs on a PTY" bash -c 'timeout 5 script -qec "zellij -s smoke" /dev/null >/dev/null 2>&1; test $? -eq 124'
+    # omp: rendering the prompt for fish requires a PTY; 124 = stayed up
+    if command -v omp >/dev/null 2>&1 && omp --help 2>&1 | grep -qi 'run\|shell'; then
+        check "omp runs on a PTY" bash -c 'timeout 5 script -qec "omp run fish" /dev/null >/dev/null 2>&1; test $? -eq 124'
+    fi
+else
+    printf 'skip PTY checks (no script(1))\n'
+fi
+
+# --- 4. Nerd Font --------------------------------------------------------------
+if command -v fc-list >/dev/null 2>&1; then
+    check "Nerd Font registered" bash -c 'fc-list | grep -qi "hack.*nerd.*font\|nerd.*font.*hack"'
+else
+    printf 'FAIL fc-list missing\n'
+    fails=$((fails + 1))
+fi
+
+printf '\n%s\n' "$fails failing check(s)"
+exit "$fails"

@@ -12,10 +12,6 @@ set -euo pipefail
 
 mkdir -p ~/.config/tmux
 
-python3 -c "
-import sys
-sys.stdout.buffer.write(
-    b'set -g @tmux2k-left-sep \"\xee\x82\xb0\"\n'
-    b'set -g @tmux2k-right-sep \"\xee\x82\xb2\"\n'
-)
-" > ~/.config/tmux/seps.conf
+# U+E0B0 = filled arrow pointing right (EE 82 B0) — tmux2k left separator
+# U+E0B2 = filled arrow pointing left  (EE 82 B2) — tmux2k right separator
+printf 'set -g @tmux2k-left-sep "\\xEE\\x82\\xB0"\nset -g @tmux2k-right-sep "\\xEE\\x82\\xB2"\n' > ~/.config/tmux/seps.conf

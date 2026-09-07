@@ -34,6 +34,11 @@ PLUGINS=(
 	'givensuman/fish-bat'
 )
 
+if ! command -v curl >/dev/null 2>&1; then
+	log "curl not found; skipping fisher install (safe no-op)."
+	exit 0
+fi
+
 # Helper: detect whether fisher (the function) is available in fish
 fisher_present() {
 	fish -c 'if functions -q fisher; echo yes; end' 2>/dev/null | grep -q '^yes$'
@@ -43,17 +48,17 @@ if fisher_present; then
 	log "fisher already present"
 else
 	log "fisher not found; installing via the upstream installer"
-	# The installer is run inside fish. It defines the 'fisher' function.
+	# The installer is defined by sourcing the install script inside fish.
 	if ! fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher' >/dev/null 2>&1; then
-		log "failed to run fisher installer"
-		exit 1
+		log "WARNING: failed to run fisher installer (network?); skipping — rerun chezmoi apply later"
+		exit 0
 	fi
 	# Verify again
 	if fisher_present; then
 		log "fisher installed successfully"
 	else
-		log "fisher installation did not produce a fisher function; aborting"
-		exit 1
+		log "WARNING: fisher installation did not produce a fisher function; skipping"
+		exit 0
 	fi
 fi
 
@@ -70,14 +75,15 @@ if [ -z "${plugins_str// /}" ]; then
 fi
 
 log "installing/updating plugins: ${PLUGINS[*]}"
-# Run fisher install with the list. fisher install is idempotent: missing plugins are added.
+# fisher install is idempotent: missing plugins are added. Network blips must
+# not fail the whole chezmoi apply — log and continue; next apply retries.
 if ! fish -c "fisher install $plugins_str"; then
-	log "fisher failed to install plugins"
-	exit 1
+	log "WARNING: fisher plugin install failed (network?); skipping — rerun chezmoi apply later"
+	exit 0
 fi
 
 log "all plugins ensured"
 
 
-fish -c "tide configure --auto --style=Rainbow --prompt_colors='True color' --show_time='24-hour format' --rainbow_prompt_separators=Angled --powerline_prompt_heads=Sharp --powerline_prompt_tails=Flat --powerline_prompt_style='Two lines, character' --prompt_connection=Dotted --powerline_right_prompt_frame=No --prompt_connection_andor_frame_color=Lightest --prompt_spacing=Sparse --icons='Many icons' --transient=Yes"
+fish -c "tide configure --auto --style=Rainbow --prompt_colors='True color' --show_time='24-hour format' --rainbow_prompt_separators=Angled --powerline_prompt_heads=Sharp --powerline_prompt_tails=Flat --powerline_prompt_style='Two lines, character' --prompt_connection=Dotted --powerline_right_prompt_frame=No --prompt_connection_andor_frame_color=Lightest --prompt_spacing=Sparse --icons='Many icons' --transient=Yes" || log "WARNING: tide configure failed (non-fatal)"
 

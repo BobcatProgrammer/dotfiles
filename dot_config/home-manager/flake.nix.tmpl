@@ -15,7 +15,8 @@
     let
       # Current machines are Apple Silicon / Asahi Linux (aarch64).
       # Add x86_64 branches here if an Intel machine joins.
-      system = "aarch64-{{ if eq .chezmoi.os "darwin" }}darwin{{ else }}linux{{ end }}";
+      # .chezmoi.arch: arm64 (Apple Silicon/Asahi) or amd64 (Intel/x86 CI).
+      system = "{{ if eq .chezmoi.arch "arm64" }}aarch64{{ else }}x86_64{{ end }}-{{ if eq .chezmoi.os "darwin" }}darwin{{ else }}linux{{ end }}";
       # import nixpkgs directly (not legacyPackages) so nixpkgs.config applies;
       # allowUnfree covers terraform (BSL), vscode, etc.
       pkgs = import nixpkgs {
@@ -25,7 +26,7 @@
       lib = nixpkgs.lib;
     in
     {
-      homeConfigurations.trockels =
+      homeConfigurations."{{ .chezmoi.username }}" =
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
 

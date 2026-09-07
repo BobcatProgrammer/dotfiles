@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Skip gracefully when we cannot get root (fresh/machine or container without
+# passwordless sudo): do not fail chezmoi applies.
+can_root() {
+    if [ "$(id -u)" -eq 0 ]; then return 0; fi
+    command -v sudo >/dev/null 2>&1 || return 1
+    if sudo -n true 2>/dev/null; then return 0; fi
+    [ -t 0 ] # interactive: sudo may prompt for a password
+}
+if ! can_root; then
+    echo "Cannot modify /etc/shells or chsh without privileges; skipping (run manually if you want fish as your login shell)."
+    exit 0
+fi
+
 # Check if fish is installed
 if ! command -v fish >/dev/null 2>&1; then
     echo "fish shell is not installed. Skipping changing default shell."
@@ -20,7 +33,11 @@ fi
 # Check if fish is in /etc/shells
 if ! grep -q "^$FISH_PATH$" /etc/shells; then   
     echo "Adding $FISH_PATH to /etc/shells"
-    echo "$FISH_PATH" | sudo tee -a /etc/shells
+    if [ "$(id -u)" -eq 0 ]; then
+        echo "$FISH_PATH" >> /etc/shells
+    else
+        echo "$FISH_PATH" | sudo tee -a /etc/shells >/dev/null
+    fi
 fi
 # Change the default shell to fish
 echo "Changing default shell to fish ($FISH_PATH)"
