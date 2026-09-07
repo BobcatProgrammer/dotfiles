@@ -53,8 +53,10 @@ check "home-manager targets linux" grep -q 'x86_64-linux\|aarch64-linux' "$HOME/
 # --- 3. PTY launches -----------------------------------------------------------
 if command -v script >/dev/null 2>&1; then
     check "tmux starts a session" bash -c 'tmux -L smoke new-session -d -s s && tmux -L smoke kill-session -t s'
-    # zellij: start on a PTY, let it run 5s (timeout 124 = stayed up)
-    check "zellij runs on a PTY" bash -c 'timeout 5 script -qec "zellij -s smoke" /dev/null >/dev/null 2>&1; test $? -eq 124'
+    # zellij: start on a PTY, let it run 5s (timeout 124 = stayed up).
+    # Unique session name per run; zellij's server persists after the client
+    # is killed, so clean up the session to keep reruns green.
+    check "zellij runs on a PTY" bash -c 's="smoke-$$"; timeout 5 script -qec "zellij -s $s" /dev/null >/dev/null 2>&1; rc=$?; zellij kill-session "$s" >/dev/null 2>&1 || true; test "$rc" -eq 124'
     # omp: rendering the prompt for fish requires a PTY; 124 = stayed up
     if command -v omp >/dev/null 2>&1 && omp --help 2>&1 | grep -qi 'run\|shell'; then
         check "omp runs on a PTY" bash -c 'timeout 5 script -qec "omp run fish" /dev/null >/dev/null 2>&1; test $? -eq 124'
