@@ -1,0 +1,43 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Install Mac App Store apps via `mas` (installed by home-manager).
+# Idempotent: apps already installed are skipped.
+# The App Store is an OS channel, not a package manager — this script is the
+# declarative list of App Store purchases to restore.
+
+log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+    log "Not macOS; skipping."
+    exit 0
+fi
+
+if ! command -v mas >/dev/null 2>&1; then
+    log "mas not found in PATH (is home-manager applied?); skipping."
+    exit 0
+fi
+
+# id:display-name
+APPS=(
+    "1352778147:Bitwarden"
+    "1099568401:Home Assistant"
+    "1475387142:Tailscale"
+    "966085870:TickTick"
+    "1502834782:Diarium"
+)
+
+for entry in "${APPS[@]}"; do
+    id="${entry%%:*}"
+    name="${entry#*:}"
+    if mas list 2>/dev/null | grep -q "^${id}[[:space:]]"; then
+        log "${name} already installed; skipping"
+    else
+        log "Installing ${name} (${id})"
+        if ! mas install "$id"; then
+            log "WARNING: failed to install ${name} (${id}); you may need to sign in to the App Store"
+        fi
+    fi
+done
+{{- end -}}

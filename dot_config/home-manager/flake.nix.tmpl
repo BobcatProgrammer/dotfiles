@@ -1,0 +1,40 @@
+{
+  description = "Trockels Home Manager configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    omp.url = "github:can1357/oh-my-pi";
+  };
+
+  outputs = { nixpkgs, home-manager, omp, ... }:
+    let
+      # Current machines are Apple Silicon / Asahi Linux (aarch64).
+      # Add x86_64 branches here if an Intel machine joins.
+      system = "aarch64-{{ if eq .chezmoi.os "darwin" }}darwin{{ else }}linux{{ end }}";
+      # import nixpkgs directly (not legacyPackages) so nixpkgs.config applies;
+      # allowUnfree covers terraform (BSL), vscode, etc.
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      lib = nixpkgs.lib;
+    in
+    {
+      homeConfigurations.trockels =
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+
+          extraSpecialArgs = {
+            inherit omp;
+          };
+
+          # omp (oh-my-pi harness shell) is Linux-only for now.
+          modules = [ ./home.nix ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [ ./omp.nix ];
+        };
+    };
+}

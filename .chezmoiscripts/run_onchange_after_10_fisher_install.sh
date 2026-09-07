@@ -29,13 +29,9 @@ PLUGINS=(
 	'budimanjojo/tmux.fish'
 	'plttn/fish-eza'
 	'patrickf1/fzf.fish'
-	'sentriz/fish-pipenv'
-	'aohorodnyk/fish-autovenv'
 	'z11i/github-copilot-cli.fish'
-	'laughedelic/brew-completions'
 	'aysonwallach/fish-you-should-use'
 	'givensuman/fish-bat'
-	'edc/bass'
 )
 
 # Helper: detect whether fisher (the function) is available in fish

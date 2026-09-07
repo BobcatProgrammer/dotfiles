@@ -1,8 +1,9 @@
-{{- if or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux") -}}
+{{- if eq .chezmoi.os "darwin" -}}
 #!/usr/bin/env bash
 set -euo pipefail
 
 # run_after script for chezmoi to install items from ~/.Brewfile
+# Homebrew is macOS-only now: everything else is managed by home-manager.
 # This script is idempotent and safe to run multiple times. It will:
 # - ensure a Brewfile exists at $HOME/.Brewfile (copying from the repo copy if present)
 # - ensure Homebrew is available in the environment (attempt common shellenv steps)

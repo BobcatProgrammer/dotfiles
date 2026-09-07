@@ -1,89 +1,20 @@
-# ~/.Brewfile
+# ~/.Brewfile — macOS-only residual
+#
+# Everything else is managed by home-manager from the nixpkgs flake
+# (dot_config/home-manager/home.nix). Add packages here ONLY if they have
+# no working nixpkgs equivalent. Homebrew no longer installs CLI tools.
 
-tap "github/gh"
 tap "slp/krunkit"
 
-brew "age"
-brew "bash"
-brew "bitwarden-cli"
-brew "bat-extras"
-brew "bat"
-brew "composer"
-brew "coreutils"
-brew "curl"
-brew "direnv"
-brew "eza"
-brew "fish"
-brew "fluxcd/tap/flux"
-brew "fzf"
-brew "gh"
-brew "git"
-brew "gitleaks"
-brew "go"
-brew "grep"
-brew "jq"
-brew "k9s"
+# nixpkgs has no darwin build for these
 brew "krunkit"
-brew "kubectl"
-brew "kubectx"
-brew "kustomize"
-brew "mas"
-brew "neovim"
-brew "nmap"
-brew "node"
-brew "pyenv"
-brew "pipenv"
-brew "pnpm"
-brew "pre-commit"
-brew "podman"
-brew "podman-compose"
-brew "ripgrep"
-brew "sops"
-brew "sesh"
-brew "scc"
-brew "terraform-docs"
-brew "tfenv"
-brew "tflint"
-brew "tmux"
-brew "tmuxinator"
-brew "tree"
-brew "wget"
-brew "yq"
-brew "zoxide"
 
+cask "raycast"
+cask "logi-options+"
+cask "podman-desktop"
+cask "signal"
+
+# Nerd fonts (nixpkgs nerd-fonts lacks the caskaydia variants)
 cask "font-hack-nerd-font"
 cask "font-caskaydia-cove-nerd-font"
 cask "font-caskaydia-mono-nerd-font"
-cask "raycast"
-cask "gcloud-cli"
-cask "logi-options+"
-cask "rectangle"
-cask "podman-desktop"
-cask "signal"
-cask "visual-studio-code"
-cask "insomnia"
-cask "miniconda"
-
-
-mas "Bitwarden", id: 1352778147
-mas "Home Assistant", id: 1099568401
-mas "Tailscale", id: 1475387142
-mas "TickTick", id: 966085870
-mas "Diarium", id: 1502834782
-
-vscode "aaron-bond.better-comments"
-vscode "EditorConfig.EditorConfig"
-vscode "bradlc.vscode-tailwindcss"
-vscode "dbaeumer.vscode-eslint"
-vscode "davidanson.vscode-markdownlint"
-vscode "ditrix.ask-me-copilot-tool"
-vscode "golang.go"
-vscode "GitHub.vscode-pull-request-github"
-vscode "Github.vscode-github-actions"
-vscode "Github.github-vscode-theme"
-vscode "GitHub.copilot"
-vscode "GitHub.copilot-chat"
-vscode "hashicorp.terraform"
-vscode "redhat.vscode-yaml"
-vscode "timonwong.shellcheck"
-vscode "vscode-icons-team.vscode-icons"

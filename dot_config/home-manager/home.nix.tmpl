@@ -1,0 +1,96 @@
+{ config, pkgs, lib, ... }:
+
+let
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+
+  # CLI tools: identical on macOS and Linux.
+  # Everything here was formerly installed via Homebrew / asdf.
+  cli = with pkgs; [
+    age
+    bat
+    bitwarden-cli
+    curl
+    direnv
+    eza
+    fd
+    fish
+    fluxcd
+    fzf
+    gh
+    git
+    gitleaks
+    go
+    google-cloud-sdk
+    jq
+    k9s
+    kubectl
+    kubectx
+    kustomize
+    neovim
+    nmap
+    nodejs
+    php
+    phpPackages.composer
+    pnpm
+    podman
+    podman-compose
+    pre-commit
+    ripgrep
+    scc
+    sesh
+    sops
+    terraform
+    terraform-docs
+    tflint
+    tmux
+    tmuxinator
+    tree
+    uv
+    wget
+    yq
+    zoxide
+  ];
+
+  # macOS-only packages.
+  # Validation on the Mac may bounce insomnia back to the residual Brewfile
+  # if its nixpkgs darwin build fails.
+  darwin = with pkgs; [
+    bash # modern bash: macOS ships 3.2
+    mas # App Store CLI (used by the chezmoi mas-install script)
+    rectangle
+    insomnia
+    vscode-with-extensions {
+      extensions = with vscode-extensions; [
+        aaron-bond.better-comments
+        editorconfig.editorconfig
+        bradlc.vscode-tailwindcss
+        dbaeumer.vscode-eslint
+        davidanson.vscode-markdownlint
+        golang.go
+        github.vscode-pull-request-github
+        github.vscode-github-actions
+        github.github-vscode-theme
+        github.copilot
+        github.copilot-chat
+        hashicorp.terraform
+        redhat.vscode-yaml
+        timonwong.shellcheck
+        vscode-icons-team.vscode-icons
+      ];
+    }
+  ];
+in
+{
+  home.username = "{{ .chezmoi.username }}";
+  home.homeDirectory = "{{ .chezmoi.homeDir }}";
+
+  home.stateVersion = "26.05";
+
+  home.packages = cli ++ lib.optionals isDarwin darwin;
+
+  home.sessionVariables = {
+    EDITOR = "vim";
+  };
+
+  programs.home-manager.enable = true;
+}
