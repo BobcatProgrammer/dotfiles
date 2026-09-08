@@ -1,0 +1,13 @@
+layout {
+    tab name="editor" focus=true {
+        pane command="nvim"
+    }
+{{ if eq .chezmoi.os "linux" }}
+    tab name="agent" {
+        pane command="omp"
+    }
+{{ end }}
+    tab name="shell" {
+        pane
+    }
+}

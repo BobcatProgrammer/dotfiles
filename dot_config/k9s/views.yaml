@@ -1,0 +1,12 @@
+# $XDG_CONFIG_HOME/k9s/views.yaml
+views:
+  kustomize.toolkit.fluxcd.io/v1/kustomizations:
+    columns:
+      - NAMESPACE
+      - NAME
+      - READY
+      - 'SUSPENDED:.spec.suspend'
+      - 'SOURCE:.spec.sourceRef.name'
+      - STATUS
+      - 'LAST-APPLIED:.status.history[0].lastReconciled|T'
+      - AGE

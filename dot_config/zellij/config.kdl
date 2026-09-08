@@ -1,14 +1,49 @@
 // zellij configuration — ~/.config/zellij/config.kdl
 // Managed by chezmoi (dot_config/zellij/config.kdl).
-// Theme is one of zellij's builtins (ships with the package).
+
+themes {
+    // Keep programs that use the terminal's default foreground readable.
+    catppuccin-mocha {
+        fg 205 214 244
+        bg 30 30 46
+        black 69 71 90
+        red 243 139 168
+        green 166 227 161
+        yellow 249 226 175
+        blue 137 180 250
+        magenta 245 194 231
+        cyan 148 226 213
+        white 186 194 222
+        orange 250 179 135
+    }
+}
 
 theme "catppuccin-mocha"
+theme_dark "catppuccin-mocha"
+theme_light "catppuccin-mocha"
 
 mouse_mode true
 copy_on_select true
 scrollback_lines_to_search 10000
 
-// fish is the default shell everywhere in this setup
+// fish is the default shell everywhere in this setup.
 default_shell "fish"
 
 status_bar_position "bottom"
+
+pane_frames false
+
+keybinds {
+    shared_except "locked" {
+        bind "Alt g" {
+            Run "lazygit" {
+                floating true
+                close_on_exit true
+                width "90%"
+                height "90%"
+                x "5%"
+                y "5%"
+            }
+        }
+    }
+}

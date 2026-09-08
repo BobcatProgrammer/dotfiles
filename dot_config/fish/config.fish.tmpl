@@ -35,13 +35,14 @@ string match -q "$TERM_PROGRAM" "vscode"
 and . (code --locate-shell-integration-path fish)
 # End VSCode Terminal integration
 
-# Run tmux automatically if in an interactive shell and not already in tmux
+# Run zellij automatically if in an interactive shell and not already in zellij
 if status is-interactive
-    and not set -q TMUX
+    and not set -q ZELLIJ
     and not set -q VSCODE_TERMINAL
+    and not set -q OPENCODE_CLIENT
     and test "$TERM_PROGRAM" != "vscode"
-    and command -q tmux
-            tmux attach -t main || tmux new -s main
+    and command -q zellij
+            zellij attach -c main
 end
 
 # Autoload venv (works for uv / pip project venvs)
@@ -54,8 +55,6 @@ end
 # set default username to hide user@host ... see agnoster theme
 set DEFAULT_USER {{ .chezmoi.username }}
 
-# Set tmux config path
-set -Ux fish_tmux_config $HOME/.config/tmux/tmux.conf
 
 # theme
 set theme_color_scheme 'Catppuccin Mocha'
