@@ -66,12 +66,24 @@ fi
 # --- 2. Nix (Determinate) -----------------------------------------------------
 if ! command -v nix >/dev/null 2>&1; then
     log "installing Nix (Determinate installer)"
-    if [ -d /run/systemd/system ]; then
-        extra="--no-confirm"
-    else
-        log "no systemd detected; installing root-only nix (linux --init none)"
-        extra="linux --init none --no-confirm"
-    fi
+    case "$(uname -s)" in
+        Darwin)
+            # Omit the Linux planner; the installer selects its macOS planner.
+            log "using the macOS planner"
+            extra="--no-confirm"
+            ;;
+        Linux)
+            if [ -d /run/systemd/system ]; then
+                extra="--no-confirm"
+            else
+                log "no systemd detected; installing root-only nix (linux --init none)"
+                extra="linux --init none --no-confirm"
+            fi
+            ;;
+        *)
+            die "unsupported operating system: $(uname -s)"
+            ;;
+    esac
     # shellcheck disable=SC2086
     curl -fsSL https://install.determinate.systems/nix | sh -s -- install $extra \
         || die "Nix install failed"
