@@ -103,7 +103,7 @@ export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
 # --- 3. home-manager ----------------------------------------------------------
 if ! command -v home-manager >/dev/null 2>&1; then
     log "installing home-manager CLI into the nix profile"
-    nix profile install github:nix-community/home-manager || die "home-manager install failed"
+    nix profile add github:nix-community/home-manager || die "home-manager install failed"
 fi
 
 # `home-manager switch` activation installs its own home-manager-path env into
