@@ -126,6 +126,14 @@ fi
 
 REPO="${DOTFILES_REPO:-https://github.com/BobcatProgrammer/dotfiles.git}"
 SOURCE_DIR="$HOME/.local/share/chezmoi"
+case "$REPO" in
+    /*|./*|../*)
+        # Local checkout (CI mounts this repo): root reads a repo owned by the
+        # runner uid — git >=2.35.3 refuses it as "dubious ownership".
+        git config --global --add safe.directory "$REPO" || true
+        git config --global --add safe.directory "$REPO/.git" || true
+        ;;
+esac
 if [ -d "$SOURCE_DIR/.git" ]; then
     log "chezmoi source already present; pulling latest"
     git -C "$SOURCE_DIR" pull --ff-only -q || log "WARNING: pull failed; continuing with existing source"
