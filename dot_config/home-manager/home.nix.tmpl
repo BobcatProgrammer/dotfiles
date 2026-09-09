@@ -66,8 +66,8 @@ let
     mas # App Store CLI (used by the chezmoi mas-install script)
     rectangle
     insomnia
-    vscode-with-extensions {
-      extensions = with vscode-extensions; [
+    (vscode-with-extensions.override {
+      vscodeExtensions = with vscode-extensions; [
         aaron-bond.better-comments
         editorconfig.editorconfig
         bradlc.vscode-tailwindcss
@@ -84,7 +84,7 @@ let
         timonwong.shellcheck
         vscode-icons-team.vscode-icons
       ];
-    }
+    })
   ];
 
   # Linux-only packages.
