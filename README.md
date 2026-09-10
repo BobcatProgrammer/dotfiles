@@ -30,6 +30,19 @@ Chezmoi owns every file in `~/.config` (fish, tmux, zellij, lazygit, nvim, alacr
 * [Alacritty terminal](https://alacritty.org)
 * [uv](https://docs.astral.sh/uv/) (python toolchains — no conda/pyenv/pipenv)
 
+## Manual extras (uv tools)
+
+Python CLI tools that are not worth a nix derivations live in uv tool envs. Recorded here so
+every machine gets the same command:
+
+```sh
+# Spotify downloader (fork; its pyproject omits websocket-client, hence --with).
+# ffmpeg is provided by home-manager. Needs Spotify cookies.txt (+ optional device.wvd).
+uv tool install --with websocket-client \
+  "git+https://github.com/GladistonXD/votify-fix@f7aa9d2cdd2edd6504d8e5d39aa8363b5d603a67"
+uv tool upgrade votify --reinstall   # bump the pinned commit
+```
+
 ## Scripts
 
 - All scripts MUST be idempotent (safe to run multiple times).
