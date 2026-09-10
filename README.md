@@ -36,11 +36,16 @@ Python CLI tools that are not worth a nix derivations live in uv tool envs. Reco
 every machine gets the same command:
 
 ```sh
-# Spotify downloader (fork; its pyproject omits websocket-client, hence --with).
-# ffmpeg is provided by home-manager. Needs Spotify cookies.txt (+ optional device.wvd).
-uv tool install --with websocket-client \
+# Spotify downloader (fork). Two upstream bugs worked around here:
+#  - pyproject omits websocket-client (imported by spotify_api.py)  -> --with websocket-client
+#  - click 8.5 flag defaults serialize as "<object object at 0x..>" into
+#    ~/.votify/config.ini, which the same run then fails to parse -> pin click<8.5
+# ffmpeg comes from home-manager. Needs Spotify cookies.txt (+ optional device.wvd).
+rm -f ~/.votify/config.ini   # clear any config poisoned by the click bug
+uv tool install --force \
+  --with websocket-client --with 'click<8.5' \
   "git+https://github.com/GladistonXD/votify-fix@f7aa9d2cdd2edd6504d8e5d39aa8363b5d603a67"
-uv tool upgrade votify --reinstall   # bump the pinned commit
+uv tool upgrade votify --reinstall   # keeps recorded extras; bump the pinned commit
 ```
 
 ## Scripts
