@@ -8,6 +8,32 @@ let
   # casks (font dirs there are handled by the OS); Linux installs via nix.
   hackFont = pkgs.nerd-fonts.hack;
 
+  # VS Code + extensions on every OS (unfree; enabled in flake.nix).
+  vscodeWithExtensions = pkgs.vscode-with-extensions.override {
+    vscodeExtensions = with pkgs.vscode-extensions; [
+      aaron-bond.better-comments
+      editorconfig.editorconfig
+      bradlc.vscode-tailwindcss
+      dbaeumer.vscode-eslint
+      davidanson.vscode-markdownlint
+      golang.go
+      github.vscode-pull-request-github
+      github.vscode-github-actions
+      github.github-vscode-theme
+      github.copilot
+      github.copilot-chat
+      hashicorp.terraform
+      redhat.vscode-yaml
+      timonwong.shellcheck
+      vscode-icons-team.vscode-icons
+    ];
+  };
+
+  # GUI applications: identical on macOS and Linux.
+  gui = [
+    vscodeWithExtensions
+  ];
+
   # CLI tools: identical on macOS and Linux.
   # Everything here was formerly installed via Homebrew / asdf.
   cli = with pkgs; [
@@ -66,25 +92,6 @@ let
     mas # App Store CLI (used by the chezmoi mas-install script)
     rectangle
     insomnia
-    (vscode-with-extensions.override {
-      vscodeExtensions = with vscode-extensions; [
-        aaron-bond.better-comments
-        editorconfig.editorconfig
-        bradlc.vscode-tailwindcss
-        dbaeumer.vscode-eslint
-        davidanson.vscode-markdownlint
-        golang.go
-        github.vscode-pull-request-github
-        github.vscode-github-actions
-        github.github-vscode-theme
-        github.copilot
-        github.copilot-chat
-        hashicorp.terraform
-        redhat.vscode-yaml
-        timonwong.shellcheck
-        vscode-icons-team.vscode-icons
-      ];
-    })
   ];
 
   # Linux-only packages.
@@ -100,7 +107,7 @@ in
 
   home.stateVersion = "26.05";
 
-  home.packages = cli ++ lib.optionals isDarwin darwin ++ lib.optionals isLinux linux;
+  home.packages = cli ++ gui ++ lib.optionals isDarwin darwin ++ lib.optionals isLinux linux;
 
   # Expose the nix-installed Nerd Font to fontconfig on Linux.
   home.file = lib.mkIf isLinux {

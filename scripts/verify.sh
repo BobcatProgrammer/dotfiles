@@ -27,7 +27,7 @@ export PATH="$HOME/.nix-profile/bin:$HOME/.local/bin:/nix/var/nix/profiles/defau
 
 # --- 1. tools ---------------------------------------------------------------
 declare -A vflag=([tmux]="-V")
-for tool in omp nvim lazygit zellij tmux fish; do
+for tool in omp nvim lazygit zellij tmux fish code; do
     if command -v "$tool" >/dev/null 2>&1; then
         check "$tool version exits 0" "$tool" "${vflag[$tool]:---version}"
     else
@@ -35,6 +35,11 @@ for tool in omp nvim lazygit zellij tmux fish; do
         fails=$((fails + 1))
     fi
 done
+
+# vscode must carry the extension set from home.nix
+if command -v code >/dev/null 2>&1; then
+    check "vscode extensions installed" bash -c 'code --list-extensions | grep -qx "golang.go" && code --list-extensions | grep -qx "hashicorp.terraform" && code --list-extensions | grep -qx "github.copilot"'
+fi
 
 # --- 2. configs ---------------------------------------------------------------
 for cfg in \
