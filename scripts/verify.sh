@@ -14,10 +14,12 @@ fails=0
 check() { # name, condition...
     local name="$1"
     shift
-    if "$@" >/dev/null 2>&1; then
+    local out
+    if out="$("$@" 2>&1)"; then
         printf 'ok   %s\n' "$name"
     else
         printf 'FAIL %s\n' "$name"
+        printf '     %s\n' "$(printf '%s' "$out" | tail -3 | tr '\n' ' ')"
         fails=$((fails + 1))
     fi
 }
@@ -26,10 +28,13 @@ check() { # name, condition...
 export PATH="$HOME/.nix-profile/bin:$HOME/.local/bin:/nix/var/nix/profiles/default/bin:$PATH"
 
 # --- 1. tools ---------------------------------------------------------------
-declare -A vflag=([tmux]="-V")
+# Electron's chromium sandbox cannot initialise in unprivileged containers
+# (GitHub runners, most podman/docker images), so VS Code gets --no-sandbox.
+declare -A vflag=([tmux]="-V" [code]="--no-sandbox --version")
 for tool in omp nvim lazygit zellij tmux fish code; do
     if command -v "$tool" >/dev/null 2>&1; then
-        check "$tool version exits 0" "$tool" "${vflag[$tool]:---version}"
+        read -r -a flags <<<"${vflag[$tool]:---version}"
+        check "$tool version exits 0" "$tool" "${flags[@]}"
     else
         printf 'FAIL %s on PATH\n' "$tool"
         fails=$((fails + 1))
@@ -38,7 +43,7 @@ done
 
 # vscode must carry the extension set from home.nix
 if command -v code >/dev/null 2>&1; then
-    check "vscode extensions installed" bash -c 'code --list-extensions | grep -qx "golang.go" && code --list-extensions | grep -qx "hashicorp.terraform" && code --list-extensions | grep -qx "github.copilot"'
+    check "vscode extensions installed" bash -c 'code --no-sandbox --list-extensions | grep -qx "golang.go" && code --no-sandbox --list-extensions | grep -qx "hashicorp.terraform" && code --no-sandbox --list-extensions | grep -qx "github.copilot"'
 fi
 
 # --- 2. configs ---------------------------------------------------------------
